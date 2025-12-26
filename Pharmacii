@@ -1,65 +1,24 @@
--- Tyrant UI Loader
-local Tyrant = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/NoobHubV2/Tyrant-UI/main/source.lua"
-))()
+local gui = Instance.new("ScreenGui")
+gui.Name = "PharmaciiHubLoader"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local Window = Tyrant:CreateWindow({
-    Name = "Pharmacii Hub",
-    Theme = {
-        Background = Color3.fromRGB(25,25,25),
-        Accent = Color3.fromRGB(255,70,70),
-        Text = Color3.fromRGB(255,255,255)
-    },
-    Keybind = Enum.KeyCode.RightShift
-})
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.fromScale(0.36,0.34)
+frame.Position = UDim2.fromScale(0.5,0.5)
+frame.AnchorPoint = Vector2.new(0.5,0.5)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
 
-local MainTab = Window:CreateTab("Loader")
-
--- State
-local Loaded = false
-local AppleGui = nil
-
--- Your ORIGINAL script wrapped
-local function LoadPharmacii()
-    if Loaded then return end
-    Loaded = true
-
-    -- Run your existing script
-    task.spawn(function()
-        loadstring([[
-            -- === YOUR SCRIPT START ===
-
-            local library = loadstring(game:HttpGet("https://github.com/GoHamza/AppleLibrary/blob/main/main.lua?raw=true"))()
-            local window = library:init("Pharmacii Hub", true, Enum.KeyCode.RightShift, true)
-
-            -- everything else stays EXACTLY the same
-            -- (I did not modify a single feature)
-
-            -- === YOUR SCRIPT END ===
-        ]])()
-    end)
-end
-
-local function UnloadPharmacii()
-    Loaded = false
-
-    -- Clean up AppleLibrary UI safely
-    for _,v in pairs(game:GetService("CoreGui"):GetChildren()) do
-        if v.Name:lower():find("pharmacii") or v.Name:lower():find("apple") then
-            v:Destroy()
-        end
-    end
-end
-
--- Toggle Button
-MainTab:AddToggle({
-    Name = "Enable Pharmacii Hub",
-    Default = false,
-    Callback = function(state)
-        if state then
-            LoadPharmacii()
-        else
-            UnloadPharmacii()
-        end
-    end
-})
+local box = Instance.new("TextBox", frame)
+box.Size = UDim2.fromScale(0.8,0.2)
+box.Position = UDim2.fromScale(0.1,0.42)
+local ok, key = pcall(loadKey)
+box.Text = ok and key or ""
+box.PlaceholderText = "Enter Key"
+box.Font = Enum.Font.Gotham
+box.TextSize = 16
+box.TextColor3 = Color3.fromRGB(255,255,255)
+box.BackgroundColor3 = Color3.fromRGB(80,80,80)
+Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
