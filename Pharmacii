@@ -1,203 +1,641 @@
---==================================================
--- PHARMACII HUB | TYRANT POLISH + CONFIG SAVE
---==================================================
+local library = loadstring(game:HttpGet("https://github.com/GoHamza/AppleLibrary/blob/main/main.lua?raw=true"))()
+local window = library:init("Pharmacii Hub", true, Enum.KeyCode.RightShift, true)
 
-if getgenv().PharmaciiLoaded then return end
-getgenv().PharmaciiLoaded = true
 
---======================
--- SERVICES
---======================
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UIS = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
-local RunService = game:GetService("RunService")
-local SoundService = game:GetService("SoundService")
+-- [DONT TOUCH / STARTERUP ] 
+window:Divider("ROBLOX FOOTBALL")
+local sectionA = window:Section("RCFA SECTION")
+local sectionB = window:Section("HSFL SECTION")
+local sectionC = window:Section("OL/DL SECTION")
+local sectionD = window:Section("TRACK SECTION")
+local sectionF = window:Section("XCAA SECTION")
+local sectionL = window:Section("LEGENDS ON CAMPUS")
+local sectionX = window:Section("NHSFA SECTION")
+window:Divider("GENERAL")
+local sectionG = window:Section("GENERAL SECTION")
+local sectionH = window:Section("KICKING SECTION")
+local sectionI = window:Section("CONTROL SECTION")
+local sectionJ = window:Section("SETTINGS")
 
-local player = Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "PharmaciiHub"
-gui.ResetOnSpawn = false
+-- RCFA
+sectionA:Label("BYPASS")
+sectionA:Button("MUST CLICK", function()
+    game.Players.LocalPlayer.Character.Hitbox.LocalAntiCheat.Disabled = true
+ end)
 
---======================
--- FILES
---======================
-local KEY_FILE = "pharmacii_key.json"
-local CFG_FILE = "pharmacii_config.json"
+ sectionA:Label("MAGNET")
+ sectionA:TextField("RANGE", "Enter Magnet Range", function(b)
+    game.Players.LocalPlayer.Character.Hitbox.Size = Vector3.new(b+3,b+5,b+3)
+ end)
+sectionA:Label("HBE EXTENDER")
+sectionA:TextField("RANGE", "Enter HBE Range", function(hbe)
+    game.Players.LocalPlayer.Character.Hitbox.Size = Vector3.new(hbe,hbe+2,hbe)
+end)
+ sectionA:Label("TUCK")
+ sectionA:Switch('VISIBLE HITBOX', false, function(vis)
+    if vis then
+        game.Players.LocalPlayer.Character.Hitbox.Transparency = 0.8
+    else
+        game.Players.LocalPlayer.Character.Hitbox.Transparency = 1
+    end
+ end)
+ sectionA:Switch("AUTO TUCK", false, function(Tuc)
+    local player = game.Players.LocalPlayer.Character
 
---======================
--- DEFAULT CONFIG
---======================
-local Config = {
-    Magnet = false,
-    MagnetRange = 6,
-    VisibleHitbox = false,
-    WalkSpeed = 16,
-    JumpPower = 50
-}
-
---======================
--- LOAD CONFIG
---======================
-if isfile(CFG_FILE) then
-    local success, data = pcall(function()
-        return HttpService:JSONDecode(readfile(CFG_FILE))
-    end)
-    if success and type(data) == "table" then
-        for k,v in pairs(data) do
-            Config[k] = v
+    player.ChildAdded:Connect(function(Tuc)
+        if Tuc.Name == "Football" then
+            wait(0.1)
+   local args = {
+    [1] = {
+   
+        [1] = "Tuck"
+    }
+   } 
+   game:GetService("Players").LocalPlayer.Character.Football.Handle.RemoteEvent:FireServer(unpack(args))
         end
     end
+    )
+ end)
+
+ sectionC:Label("ENHANCED BLOCKING")
+ sectionC:Switch("ADVANCED", false, function(AdvancedBlocking)
+    if AdvancedBlocking then
+        -- Loop through all players in the game
+for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+-- Check if the player has a character
+local character = player.Character
+if character and character.Name ~= game.Players.LocalPlayer.Name then
+    -- Access the Jersey object for the player's character
+    local jersey = character:FindFirstChild("Jersey") or character:FindFirstChild("Hitbox")
+    if jersey then
+            jersey.Size = Vector3.new(10, 10, 10)
+    end
 end
-
-local function SaveConfig()
-    writefile(CFG_FILE, HttpService:JSONEncode(Config))
 end
-
---======================
--- KEY LOAD
---======================
-local savedKey = nil
-if isfile(KEY_FILE) then
-    savedKey = HttpService:JSONDecode(readfile(KEY_FILE)).key
+else
+-- Loop through all players in the game
+for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+-- Check if the player has a character
+local character = player.Character
+if character and character.Name ~= game.Players.LocalPlayer.Name then
+    -- Access the Jersey object for the player's character
+    local jersey = character:FindFirstChild("Jersey") or character:FindFirstChild("Hitbox")
+    if jersey then
+            jersey.Size = Vector3.new(2.31, 5.4, 2.3)
+    end
 end
-
---======================
--- LOADER
---======================
-local loader = Instance.new("Frame", gui)
-loader.Size = UDim2.new(0,380,0,220)
-loader.Position = UDim2.new(0.5,-190,0.5,-110)
-loader.BackgroundColor3 = Color3.fromRGB(22,22,22)
-loader.BorderSizePixel = 0
-Instance.new("UICorner", loader).CornerRadius = UDim.new(0,16)
-
-local stroke = Instance.new("UIStroke", loader)
-stroke.Color = Color3.fromRGB(255,80,80)
-stroke.Transparency = 0.25
-stroke.Thickness = 1.6
-
-local title = Instance.new("TextLabel", loader)
-title.Text = "PHARMACII HUB"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextColor3 = Color3.fromRGB(255,90,90)
-title.BackgroundTransparency = 1
-title.Size = UDim2.new(1,0,0,40)
-
-local keyBox = Instance.new("TextBox", loader)
-keyBox.PlaceholderText = "Enter Key"
-keyBox.Text = savedKey or ""
-keyBox.Size = UDim2.new(1,-50,0,38)
-keyBox.Position = UDim2.new(0,25,0,80)
-keyBox.BackgroundColor3 = Color3.fromRGB(32,32,32)
-keyBox.TextColor3 = Color3.new(1,1,1)
-keyBox.ClearTextOnFocus = false
-Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,12)
-
-local loadBtn = Instance.new("TextButton", loader)
-loadBtn.Text = "LOAD"
-loadBtn.Font = Enum.Font.GothamBold
-loadBtn.TextSize = 14
-loadBtn.TextColor3 = Color3.new(1,1,1)
-loadBtn.Size = UDim2.new(0,90,0,90)
-loadBtn.Position = UDim2.new(0.5,-45,1,-110)
-loadBtn.BackgroundColor3 = Color3.fromRGB(255,70,70)
-Instance.new("UICorner", loadBtn).CornerRadius = UDim.new(1,0)
-
--- Glow pulse
-task.spawn(function()
-    while loadBtn.Parent do
-        TweenService:Create(loadBtn,TweenInfo.new(1.2),{
-            BackgroundColor3 = Color3.fromRGB(255,110,110)
-        }):Play()
-        task.wait(1.2)
-        TweenService:Create(loadBtn,TweenInfo.new(1.2),{
-            BackgroundColor3 = Color3.fromRGB(255,70,70)
-        }):Play()
-        task.wait(1.2)
+end
     end
 end)
+ 
+ -- Legend On Campus
+ sectionL:Label("BYPASS")
+ sectionL:Button("MUST CLICK", function()
+   game.Players.LocalPlayer.Character:FindFirstChild("Anticheat").Disabled = true
+end)
+ sectionL:Label("MAGNET")   
+sectionL:Switch("VISIBLE HITBOX", false, function(reach)
+        if reach then
+            game.Players.LocalPlayer.Character.Jersey.Transparency = 0.8
+        else
+            game.Players.LocalPlayer.Character.Jersey.Transparency = 1
+        end
+end)
+sectionL:TextField("RANGE", "Enter Magnet Range", function(LOC)
+    game.Players.LocalPlayer.Character.Jersey.Size = Vector3.new(LOC+3,LOC+5,LOC+3)
+end)
 
---======================
--- KEY VALIDATION
---======================
-local function validateKey(key)
-    local hwid = game:GetService("RbxAnalyticsService"):GetClientId()
-    local url =
-        "https://pharmacii-hub--theonlykhaidors.replit.app/validate?key="
-        ..key.."&hwid="..hwid
-    return game:HttpGet(url) == "VALID"
-end
+-- HSFL 
 
---======================
--- LOAD CLICK
---======================
-loadBtn.MouseButton1Click:Connect(function()
-    local key = keyBox.Text
-    if key == "" then return end
-    if not validateKey(key) then
-        keyBox.Text = "INVALID"
-        return
+sectionB:Label("MAGNET")   
+sectionB:Switch("VISIBLE HITBOX", false, function(reach)
+        if reach then
+            game.Players.LocalPlayer.Character.Jersey.Transparency = 0.8
+        else
+            game.Players.LocalPlayer.Character.Jersey.Transparency = 1
+        end
+end)
+sectionB:TextField("RANGE", "Enter Magnet Range", function(hsfl3)
+    game.Players.LocalPlayer.Character.Jersey.Size = Vector3.new(hsfl3+3,hsfl3+5,hsfl3+3)
+end)
+
+sectionB:Label("TUCK")
+sectionB:Switch("Tuck On", false, function(autotuck)
+local player = game.Players.LocalPlayer.Character
+
+player.ChildAdded:Connect(function(TuckOn)
+    if TuckOn.Name == "Football" then
+        -- Script generated by SimpleSpy - credits to exx#9394
+
+local args = {
+    [1] = {
+        [1] = "Tuck"
+    }
+}
+
+game:GetService("Players").LocalPlayer.Character.Jersey.Event:FireServer(unpack(args))
+end 
+end)
+end)
+
+sectionB:Label("PHYSICS")
+sectionB:Button("AUTO UNSTUN", function()
+    local player = game.Players.LocalPlayer
+    local jumping = false
+    
+    function onKeyPress(inputObject, gameProcessedEvent)
+        if inputObject.KeyCode == Enum.KeyCode.E and not jumping then 
+            local hasFootballTool = player.Character:FindFirstChild("Football") ~= nil
+            if not hasFootballTool then
+                jumping = true
+                wait(0.7)
+                player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                jumping = false
+            end
+        end
     end
+    game:GetService("UserInputService").InputBegan:Connect(onKeyPress)
+end)
 
-    writefile(KEY_FILE, HttpService:JSONEncode({key = key}))
+sectionB:Button("INFINITE HITSTICK", function()
+    local player = game.Players.LocalPlayer
 
-    local ding = Instance.new("Sound", SoundService)
-    ding.SoundId = "rbxassetid://9118823101"
-    ding.Volume = 2
-    ding:Play()
-
-    TweenService:Create(loader,TweenInfo.new(0.4),{
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0,0,0,0)
-    }):Play()
-
-    task.wait(0.45)
-    loader:Destroy()
-
-    --======================
-    -- MAIN TYRANT UI
-    --======================
-    local main = Instance.new("Frame", gui)
-    main.Size = UDim2.new(0,560,0,380)
-    main.Position = UDim2.new(0.5,-280,0.5,-190)
-    main.BackgroundColor3 = Color3.fromRGB(18,18,18)
-    main.BorderSizePixel = 0
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0,18)
-
-    local visible = true
-    UIS.InputBegan:Connect(function(i,g)
-        if not g and i.KeyCode == Enum.KeyCode.RightShift then
-            visible = not visible
-            main.Visible = visible
+    local mouse = player:GetMouse()
+    
+    mouse.KeyDown:Connect(function(key)
+        if key == "z" then
+    
+    
+    local args = {
+        [1] = {
+            [1] = "Hit Stick"
+        }
+    }
+    
+    game:GetService("Players").LocalPlayer.Character.Jersey.Event:FireServer(unpack(args))
+    
         end
     end)
+end)
 
-    --======================
-    -- MAGNET LOGIC
-    --======================
-    RunService.RenderStepped:Connect(function()
-        if Config.Magnet and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            for _,v in pairs(workspace:GetDescendants()) do
-                if v.Name == "Football" and v:IsA("BasePart") then
-                    if (v.Position - player.Character.HumanoidRootPart.Position).Magnitude <= Config.MagnetRange then
-                        v.CFrame = player.Character.HumanoidRootPart.CFrame
+sectionB:Button("LOW HB WHEN CAUGHT", function(zz)
+    local player = game.Players.LocalPlayer.Character
+    local a = game.Players.LocalPlayer.Character.Jersey
+    player.ChildAdded:Connect(function(zz)
+        if zz.Name == "Football" then
+          a.Size = Vector3.new(0,0,0)
+        end
+    end)
+end)
+
+sectionB:Button("ENHANCED TRUCKING (F)", function()
+    local number = math.random(3, 4)
+        local player = game.Players.LocalPlayer
+        local mouse = player:GetMouse()
+        
+        local fPressed = false -- keep track of whether F is already pressed
+        
+        mouse.KeyDown:Connect(function(zz)
+            if zz == "f" then
+                if not fPressed then -- check if F is already pressed
+                    fPressed = true -- mark F as pressed
+                    
+                    local args = {
+                        [1] = {
+                            [1] = "Truck"
+                        }
+                    }
+        
+                    game:GetService("Players").LocalPlayer.Character.Jersey.Event:FireServer(unpack(args))
+        
+                    wait(number)
+        
+                    local args = {
+                        [1] = {
+                            [1] = "StopTruck"
+                        }
+                    }
+        
+                    game:GetService("Players").LocalPlayer.Character.Jersey.Event:FireServer(unpack(args))
+                    
+                    fPressed = false -- mark F as released
+                end
+            end
+        end)
+end)
+
+sectionB:Button("ENHANCED TRUCKING POWER", function()
+    local b = game.Players.LocalPlayer.Character.Jersey.Values
+
+    b.Power.Value = math.huge
+    
+    -- Script generated by SimpleSpy - credits to exx#9394
+    
+    local args = {
+        [1] = {
+            [1] = "Power",
+            [2] = 1000000000000000000000000000000000
+        }
+    }
+    
+    game:GetService("Players").LocalPlayer.Character.Jersey.Event:FireServer(unpack(args))
+    
+end)
+
+sectionF:Label('MAGNET')
+sectionF:TextField("RANGE", "Enter Magnet Range", function(XCAA)
+    game.Players.LocalPlayer.Character.Hitbox.Size = Vector3.new(XCAA,XCAA+2,XCAA)
+end)
+
+
+sectionF:Switch("VISIBLE HITBOX", false, function(XCAAHB)
+        if XCAAHB then
+            game.Players.LocalPlayer.Character.Hitbox.Transparency = 0.8
+        else
+            game.Players.LocalPlayer.Character.Hitbox.Transparency = 1
+        end
+end)
+
+sectionG:Label('GENERAL')
+sectionG:TextField("Speed", "Enter Speed", function(Speed)
+    local Humanoid = game:GetService("Players").LocalPlayer.Character.Humanoid
+    local HumanoidMT = getrawmetatable(Humanoid)
+    setreadonly(HumanoidMT, false)
+    
+    local OldIndex = HumanoidMT.__index
+    HumanoidMT.__index = function(Self, Key)
+        if Key == "WalkSpeed" then
+            return 17.5
+        end
+        return OldIndex(Self, Key)
+    end
+    
+    setreadonly(HumanoidMT, true)
+    
+    
+    local function change()
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Speed
+     end
+     
+     change()
+     
+end)
+sectionG:TextField("Jump Power", "Enter Power", function(Jump)
+    local Humanoid = game:GetService("Players").LocalPlayer.Character.Humanoid
+    local HumanoidMT = getrawmetatable(Humanoid)
+    setreadonly(HumanoidMT, false)
+    
+    local OldIndex = HumanoidMT.__index
+    HumanoidMT.__index = function(Self, Key)
+        if Key == "JumpPower" then
+            return 50
+        end
+        return OldIndex(Self, Key)
+    end
+    
+    print(Humanoid.JumpPower)
+setreadonly(HumanoidMT, true)
+
+local function change()
+game.Players.LocalPlayer.Character.Humanoid.JumpPower = Jump
+game.Players.LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Disconnect()
+end
+
+change()
+end)
+
+sectionG:Label('PHYSICS')
+sectionG:Switch("ANTI KNOCKBACK", false, function(antiknock)
+    local a = game.Players.LocalPlayer.Character
+    if antiknock then
+    a["Left Arm"].Size = Vector3.new(20,2,2)
+    a["Right Arm"].Size = Vector3.new(20,2,2)
+    else
+        a["Left Arm"].Size = Vector3.new(1,2,1)
+    a["Right Arm"].Size = Vector3.new(1,2,1)
+    end
+    
+end)
+
+sectionG:Button("QB Follow (R)", function()
+    local TOOL_NAME = "Football"
+        local FOLLOW_DISTANCE = 1
+        
+        local character = game:GetService("Players").LocalPlayer.Character
+        
+        
+        local isFollowing = false
+        
+        local function followPlayer()
+            for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                local playerCharacter = player.Character
+                if playerCharacter and playerCharacter:FindFirstChild(TOOL_NAME) then
+                    local torso = playerCharacter:FindFirstChild("HumanoidRootPart") or playerCharacter:FindFirstChild("Torso")
+                    if torso then
+                        local humanoid = character:WaitForChild("Humanoid")
+                        humanoid:MoveTo(torso.Position + torso.CFrame.lookVector * -FOLLOW_DISTANCE, torso)
                     end
                 end
             end
         end
-    end)
+        
+        local function toggleFollowing()
+            isFollowing = not isFollowing
+        end
+        
+        game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and input.KeyCode == Enum.KeyCode.R then
+                toggleFollowing()
+            end
+        end)
+        
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if isFollowing then
+                followPlayer()
+            end
+        end)
+        
+end)
 
-    --======================
-    -- MOVEMENT APPLY
-    --======================
-    RunService.Stepped:Connect(function()
-        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.WalkSpeed = Config.WalkSpeed
-            hum.JumpPower = Config.JumpPower
+sectionG:Button("BIG HEAD ALL", function()
+    for i,v in pairs(game.Players:GetPlayers()) do wait()
+        if v.Character then
+            v.Character.Head.Size = Vector3.new(4,4,4)
+            v.Character.Head.Transparency = 1
+        end
+    end
+end)
+
+-- SETTINGS --
+sectionJ:Label("CONFIGURATION")
+sectionJ:Button("INF YIELD", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
+sectionJ:Switch("VISIBLE ALL HITBOXES", false, function(view)
+    if view then
+        -- Loop through all players in the game
+for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+-- Check if the player has a character
+local character = player.Character
+if character and character.Name ~= game.Players.LocalPlayer.Name then
+    -- Access the Jersey object for the player's character
+    local jersey = character:FindFirstChild("Jersey") or character:FindFirstChild("Hitbox")
+    if jersey then
+            jersey.Transparency = 0.8
+    end
+end
+end
+else
+-- Loop through all players in the game
+for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+-- Check if the player has a character
+local character = player.Character
+if character and character.Name ~= game.Players.LocalPlayer.Name then
+    -- Access the Jersey object for the player's character
+    local jersey = character:FindFirstChild("Jersey")
+    if jersey then
+            jersey.Transparency = 1
+    end
+end
+end
+
+
+end
+end)
+
+ -- General --
+
+ sectionI:Label('GENEREAL')
+ sectionI:Button("SERVER LAG", function()
+    getgenv().Toggled=false
+getgenv().KeyBind="P"
+getgenv().Delay=0.7
+local UIS=game:GetService'UserInputService'
+
+
+
+local function Source()
+game:GetService("NetworkClient"):SetOutgoingKBPSLimit(math.huge)
+local function getmaxvalue(val) 
+   local mainvalueifonetable = 49999
+   if type(val) ~= "number" then
+       return nil 
+   end
+   local calculateperfectval = (mainvalueifonetable/(val+2))
+   return calculateperfectval 
+end
+
+local function bomb(tableincrease, tries) 
+ local maintable = {}
+ local spammedtable = {}
+ 
+ table.insert(spammedtable, {})
+ z = spammedtable[1]
+ 
+ for i = 1, tableincrease do
+    local tableins = {}
+    table.insert(z, tableins)
+    z = tableins
+ end 
+ 
+ local calculatemax = getmaxvalue(tableincrease) 
+ local maximum 
+ 
+ if calculatemax then
+     maximum = calculatemax
+     else
+     maximum = 10000
+ end
+ 
+ for i = 1, maximum do
+     table.insert(maintable, spammedtable)
+ end 
+ 
+  if calculatemax then
+     maximum = calculatemax
+     else
+     maximum = 10000
+ end
+ 
+ for i = 1, maximum do
+     table.insert(maintable, spammedtable)
+ end 
+
+ for i = 1, tries do
+    game.RobloxReplicatedStorage.UpdatePlayerBlockList:FireServer(maintable)
+ end
+end
+
+
+bomb(250, 5) 
+end
+UIS.InputBegan:Connect(function(Key)
+    if Key.KeyCode==Enum.KeyCode[getgenv().KeyBind:upper()] and not UIS:GetFocusedTextBox() then
+        if getgenv().Toggled then
+            getgenv().Toggled=false
+            warn'Disabled!'
+        elseif not getgenv().Toggled then
+            getgenv().Toggled=true
+            warn'Enabled!'
+            while getgenv().Toggled do
+                Source()
+                wait(getgenv().Delay)
+            end
+        end
+    end
+end)
+ end)
+
+ -- SETTINGS
+
+ sectionJ:Label("CLOCK")
+ sectionJ:TextField("BRIGHTNESS", "Enter Number", function(brightness)
+    game:GetService("Lighting").Brightness = brightness
+end)
+sectionJ:TextField("TIME", "Enter Number", function(time)
+    game:GetService("Lighting").ClockTime = time
+end)
+
+
+-- NHSFA --
+sectionX:Label("BYPASS")
+sectionX:Button("MUST CLICK", function()
+    local player = game.Players.LocalPlayer.Character.LocalAntiExploit
+
+    for i,v in pairs(player:GetChildren()) do wait()
+        v:Destroy()
+    end
+end)
+sectionX:Label("MAGNET")
+sectionX:TextField("RANGE", "Enter Magnet Range", function(nhsfa)
+    game.Players.LocalPlayer.Character.UpperJersey.Size = Vector3.new(Value,Value+2,Value)
+    game.Players.LocalPlayer.Character.LowerJersey.Size = Vector3.new(Value,Value+2,Value)
+end)
+
+sectionX:Switch("VISIBLE HITBOX", false, function(nhsfahb)
+    if nhsfahb then
+        game.Players.LocalPlayer.Character.UpperJersey.Transparency = 0.8
+        game.Players.LocalPlayer.Character.LowerJersey.Transparency = 0.8
+    else
+        game.Players.LocalPlayer.Character.LowerJersey.Transparency = 1
+        game.Players.LocalPlayer.Character.UpperJersey.Transparency = 1
+    end
+end)
+
+sectionX:Label("TUCK ON")
+sectionX:Switch("AUTO TUCK", false, function(autotuck)
+    local player = game.Players.LocalPlayer.Character  
+    player.ChildAdded:Connect(function(zz)
+        if zz.Name == "Football" then
+            wait()
+            keypress(0x54)
+end
+
+end)
+end)
+
+sectionX:Label("HITBOX")
+sectionX:Button("DECREASE TACKLE CHANCE", function()
+    local a = game.Players.LocalPlayer.Character
+    local size = 0,0,0
+    a.ChildAdded:Connect(function(zz)
+        if zz.Name == "Football" then
+            a.UpperJersey.Size = Vector3.new(size)
+            a.LowerJersey.Suze = Vector3.new(size)
         end
     end)
+
 end)
+-- TRACK
+sectionD:Label("BYPASS")
+sectionD:Button("MUST CLICK", function()
+    local a = game:GetService("Players").LocalPlayer.PlayerScripts.SprintSpeed
+    local b = game:GetService("Players").LocalPlayer.PlayerScripts.AntiExploit
+    local c = game:GetService("Players").LocalPlayer.PlayerScripts.AntiExploit2
+    local d = game:GetService("Players").LocalPlayer.Backpack.LocalScript
+    a.Disabled = true
+    b.Disabled = true
+    c.Disabled = true
+    d.Disabled = true
+end)
+
+sectionD:Label("PHYSICS")
+sectionD:Button("INFINITE STAM", function()
+ local value = math.huge
+local a = game:GetService("Players").LocalPlayer.PlayerGui.StatsBarGui.StatsFrame.StaminaFrame.Stamina
+a.Value = value
+a.Parent.Visible = false
+end)
+sectionD:Label("CONFIGURATION")
+sectionD:Button("FIX", function()
+         local a = game:GetService("Players").LocalPlayer.PlayerScripts.SprintSpeed
+        a.Disabled = false
+end)
+
+sectionI:Label("HSFL")
+sectionI:Button("RANDOM THROW", function()
+    local function undetected() -- to everybody using my script ill explain what this does. Its a local function which does nothing were gonna intercept/hook it with a built-in function print l
+
+    end
+    
+    local hook = hookfunction(print, undetected)
+    
+    
+    
+    local playerWithFootball
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        local character = player.Character
+        if character and character:FindFirstChild("Football") then
+            playerWithFootball = player
+            break
+        end
+    end
+    
+    local targetPlayer
+    if playerWithFootball then
+        local team = playerWithFootball.Team
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player.Team == team and player ~= playerWithFootball then
+                targetPlayer = player
+                break
+            end
+        end
+    end
+    
+    if playerWithFootball and targetPlayer then
+        local targetRootPart = targetPlayer.Character.HumanoidRootPart
+    
+        local args = {
+            [1] = {
+                [1] = "Clicked",
+                [2] = playerWithFootball.Character.HumanoidRootPart.Position,
+                [3] = targetRootPart.Position + Vector3.new(0, 10, 0),
+                [4] = 100,
+                [5] = 6
+            }
+        }
+    
+        playerWithFootball.Character.Football.Handle.RemoteEvent:FireServer(unpack(args))
+    else
+        print("Could not find a player with the Football object and a teammate near them.")
+    end
+end)
+
+sectionI:Switch("REFEREE", false, function(chains)
+    if chains then
+    local a = game:GetService("Players").LocalPlayer.PlayerGui.LEAGUE.Chains
+    local b = game:GetService("Players").LocalPlayer.PlayerGui.LEAGUE.Control
+    
+    
+    a.Visible = true
+    b.Visible = true
+            else
+                local a = game:GetService("Players").LocalPlayer.PlayerGui.LEAGUE.Chains
+    local b = game:GetService("Players").LocalPlayer.PlayerGui.LEAGUE.Control
+    
+    a.Visible = false
+    b.Visible = false
+    end
+end)
+
+sectionA:Select()
