@@ -20,7 +20,7 @@ local ts = game:GetService("TweenService")
 local rs = game:GetService("RunService")
 local p = game.Players.LocalPlayer
 local teleportService = game:GetService("TeleportService")
-local vim = game:GetService("VirtualInputManager") -- Added for Auto Tuck
+local vim = game:GetService("VirtualInputManager") 
 
 -- [[ GLOBAL SETTINGS ]] --
 _G.HideKey = Enum.KeyCode.LeftControl
@@ -72,10 +72,31 @@ uis.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputT
 -- [[ HEADER ]] --
 local Header = Instance.new("Frame", Main)
 Header.Size = UDim2.new(1, 0, 0, 40); Header.BackgroundTransparency = 1
+
 local Title = Instance.new("TextLabel", Header)
 Title.Text = "Pharmacii Hub"; Title.TextColor3 = Color3.fromRGB(255, 0, 50)
 Title.Font = "GothamBold"; Title.TextSize = 16; Title.Size = UDim2.new(0, 200, 1, 0); Title.Position = UDim2.new(0, 30, 0, 0)
 Title.TextXAlignment = "Left"; Title.BackgroundTransparency = 1
+
+-- [[ SEARCH BAR & CLOSE BUTTON ]] --
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -30, 0, 10)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseBtn.Text = ""
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+CloseBtn.MouseButton1Click:Connect(function() MainGui:Destroy() end)
+
+local SearchBox = Instance.new("TextBox", Header)
+SearchBox.Size = UDim2.new(0, 150, 0, 25)
+SearchBox.Position = UDim2.new(1, -190, 0, 8)
+SearchBox.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
+SearchBox.PlaceholderText = "Search..."
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.new(1, 1, 1)
+SearchBox.Font = "Gotham"
+SearchBox.TextSize = 12
+Instance.new("UICorner", SearchBox)
 
 -- [[ SIDEBAR ]] --
 local Sidebar = Instance.new("Frame", Main)
@@ -113,7 +134,7 @@ local function AddTab(name, subtext, iconId, isSettings)
     local Btn = Instance.new("TextButton"); Btn.Size = UDim2.new(0, 200, 0, 50); Btn.BackgroundColor3 = Color3.fromRGB(16, 16, 18); Btn.Text = ""; Instance.new("UICorner", Btn)
     local Icon = Instance.new("ImageLabel", Btn); Icon.Size = UDim2.new(0, 20, 0, 20); Icon.Position = UDim2.new(0, 12, 0.5, -10); Icon.BackgroundTransparency = 1; Icon.Image = "rbxassetid://" .. tostring(iconId); Icon.ImageColor3 = Color3.fromRGB(255, 0, 50) 
     local L = Instance.new("TextLabel", Btn); L.Text = name; L.Size = UDim2.new(1, -55, 0, 25); L.Position = UDim2.new(0, 42, 0, 5); L.TextColor3 = Color3.new(1,1,1); L.Font = "GothamBold"; L.TextSize = 13; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
-    local S = Instance.new("TextLabel", Btn); S.Text = subtext; S.Size = UDim2.new(1, -55, 0, 15); S.Position = UDim2.new(0, 42, 0, 23); S.TextColor3 = Color3.fromRGB(150, 150, 150); S.Font = "Gotham"; S.TextSize = 10; S.TextXAlignment = "Left"; S.BackgroundTransparency = 1
+    local S = Instance.new("TextLabel", Btn); S.Text = subtext; S.Size = UDim2.new(1, -55, 0, 15); S.Position = UDim2.new(0, 42, 0, 23); S.TextColor3 = Color3.fromRGB(150, 150, 155); S.Font = "Gotham"; S.TextSize = 10; S.TextXAlignment = "Left"; S.BackgroundTransparency = 1
     
     Btn.Parent = isSettings and Sidebar or TabScroller
     if isSettings then Btn.Position = UDim2.new(0.5, -100, 1, -115) end
@@ -135,6 +156,7 @@ end
 
 local function CreateFeature(parent, title, subText, hasSlider, defaultVal, maxVal, typeKey, callback)
     local Container = Instance.new("Frame", parent); Container.Size = UDim2.new(1, -20, 0, 60); Container.BackgroundColor3 = Color3.fromRGB(16, 16, 18); Container.ClipsDescendants = true; Instance.new("UICorner", Container)
+    Container.Name = title -- Essential for Search functionality
     local Label = Instance.new("TextLabel", Container); Label.Text = title; Label.Size = UDim2.new(0.6, 0, 0, 60); Label.Position = UDim2.new(0, 20, 0, 0); Label.TextColor3 = Color3.new(1,1,1); Label.Font = "GothamBold"; Label.TextSize = 13; Label.TextXAlignment = "Left"; Label.BackgroundTransparency = 1
     local Toggle = Instance.new("TextButton", Container); Toggle.Size = UDim2.new(0, 36, 0, 18); Toggle.Position = UDim2.new(1, -50, 0, 21); Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 48); Toggle.Text = ""; Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
     local Dot = Instance.new("Frame", Toggle); Dot.Size = UDim2.new(0, 14, 0, 14); Dot.Position = UDim2.new(0, 2, 0.5, -7); Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
@@ -174,6 +196,24 @@ local function CreateFeature(parent, title, subText, hasSlider, defaultVal, maxV
         Log(title .. (active and " On" or " Off"))
     end)
 end
+
+-- [[ SEARCH LOGIC ]] --
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local text = SearchBox.Text:lower()
+    for _, page in pairs(Pages:GetChildren()) do
+        if page:IsA("ScrollingFrame") then
+            for _, feature in pairs(page:GetChildren()) do
+                if feature:IsA("Frame") then
+                    if feature.Name:lower():find(text) then
+                        feature.Visible = true
+                    else
+                        feature.Visible = false
+                    end
+                end
+            end
+        end
+    end
+end)
 
 -- [[ TABS SETUP ]] --
 local CatchTab = AddTab("Catching", "Magnets, etc", 10734897102)
