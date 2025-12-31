@@ -318,4 +318,4 @@ end)
 
 uis.InputBegan:Connect(function(i, g) if not g and not binding and i.KeyCode == _G.HideKey then Main.Visible = not Main.Visible end end)
 CatchTab.Visible = true
-Log("Pharmacii Hub: Snap-to-Hand logic active.")
+Log("Pharmacii Hub we more ud than ever https://discord.gg/6gmH42WEZR")
