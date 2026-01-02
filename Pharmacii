@@ -3,25 +3,22 @@
 -- [[ PRE-LOAD PROTECTION ]] --
 task.spawn(function()
     local function disableAC()
-        local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+        local p = game:GetService("Players").LocalPlayer
+        local char = p.Character or p.CharacterAdded:Wait()
         local hb = char:WaitForChild("Hitbox", 5)
         if hb then
             local ac = hb:WaitForChild("LocalAntiCheat", 5)
-            if ac then
-                ac.Disabled = true
-                print("Pharmacii Hub: Anti-Cheat Disabled")
-            end
+            if ac then ac.Disabled = true end
         end
     end
     disableAC()
-    game.Players.LocalPlayer.CharacterAdded:Connect(disableAC)
+    game:GetService("Players").LocalPlayer.CharacterAdded:Connect(disableAC)
 end)
 
 local uis = game:GetService("UserInputService")
 local ts = game:GetService("TweenService")
 local rs = game:GetService("RunService")
 local p = game.Players.LocalPlayer
-local teleportService = game:GetService("TeleportService")
 local vim = game:GetService("VirtualInputManager") 
 
 -- [[ GLOBAL SETTINGS ]] --
@@ -30,16 +27,16 @@ _G.MagRange = 10
 _G.TuckSpeed = 100
 _G.WalkSpeed = 16
 _G.JumpPower = 50
-_G.InfiniteJump = false
 
-local activeTabBtn = nil
-local canDrag = true 
 local MagnetEnabled = false 
 local VisualsEnabled = false 
 local AutoTuckEnabled = false
 local NoclipEnabled = false
 local AdvancedBlocking = false 
-local binding = false
+local WalkspeedEnabled = false -- New Toggle Tracker
+local JumppowerEnabled = false -- New Toggle Tracker
+local canDrag = true
+local activeTabBtn = nil
 
 -- Clean up old UI
 if game:GetService("CoreGui"):FindFirstChild("PharmaciiHub_Master") then
@@ -51,13 +48,11 @@ MainGui.Name = "PharmaciiHub_Master"
 
 -- [[ MAIN UI ]] --
 local Main = Instance.new("Frame", MainGui)
-Main.Size = UDim2.new(0, 800, 0, 480)
-Main.Position = UDim2.new(0.5, -400, 0.5, -240)
-Main.BackgroundColor3 = Color3.fromRGB(12, 12, 14) 
-Main.BorderSizePixel = 0
+Main.Size = UDim2.new(0, 800, 0, 480); Main.Position = UDim2.new(0.5, -400, 0.5, -240)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 14); Main.BorderSizePixel = 0
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
 
--- [[ DRAGGABLE LOGIC ]] --
+-- [[ DRAGGABLE ]] --
 local dragging, dragStart, startPos
 Main.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 and canDrag then
@@ -75,31 +70,21 @@ uis.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputT
 -- [[ HEADER ]] --
 local Header = Instance.new("Frame", Main)
 Header.Size = UDim2.new(1, 0, 0, 40); Header.BackgroundTransparency = 1
-
 local Title = Instance.new("TextLabel", Header)
-Title.Text = "Pharmacii Hub"; Title.TextColor3 = Color3.fromRGB(255, 0, 50)
-Title.Font = "GothamBold"; Title.TextSize = 16; Title.Size = UDim2.new(0, 200, 1, 0); Title.Position = UDim2.new(0, 30, 0, 0)
-Title.TextXAlignment = "Left"; Title.BackgroundTransparency = 1
+Title.Text = "Pharmacii Hub"; Title.TextColor3 = Color3.fromRGB(255, 0, 50); Title.Font = "GothamBold"; Title.TextSize = 16; Title.Size = UDim2.new(0, 200, 1, 0); Title.Position = UDim2.new(0, 30, 0, 0); Title.TextXAlignment = "Left"; Title.BackgroundTransparency = 1
 
--- [[ CLOSE BUTTON & SEARCH ]] --
 local CloseBtn = Instance.new("TextButton", Header)
-CloseBtn.Size = UDim2.new(0, 20, 0, 20); CloseBtn.Position = UDim2.new(1, -30, 0, 10)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50); CloseBtn.Text = ""
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+CloseBtn.Size = UDim2.new(0, 20, 0, 20); CloseBtn.Position = UDim2.new(1, -30, 0, 10); CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50); CloseBtn.Text = ""; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
 CloseBtn.MouseButton1Click:Connect(function() MainGui:Destroy() end)
 
 -- [[ SIDEBAR ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 220, 1, -40); Sidebar.Position = UDim2.new(0, 0, 0, 40)
-Sidebar.BackgroundTransparency = 1 
-Sidebar.BorderSizePixel = 0
-
+Sidebar.Size = UDim2.new(0, 220, 1, -40); Sidebar.Position = UDim2.new(0, 0, 0, 40); Sidebar.BackgroundTransparency = 1 
 local TabScroller = Instance.new("ScrollingFrame", Sidebar)
-TabScroller.Size = UDim2.new(1, 0, 1, -120); TabScroller.Position = UDim2.new(0, 0, 0, 10)
-TabScroller.BackgroundTransparency = 1; TabScroller.ScrollBarThickness = 0
+TabScroller.Size = UDim2.new(1, 0, 1, -120); TabScroller.Position = UDim2.new(0, 0, 0, 10); TabScroller.BackgroundTransparency = 1; TabScroller.ScrollBarThickness = 0
 local TabLayout = Instance.new("UIListLayout", TabScroller); TabLayout.Padding = UDim.new(0, 5); TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ PROFILE SECTION ]] --
+-- [[ PROFILE ]] --
 local Prof = Instance.new("Frame", Sidebar)
 Prof.Size = UDim2.new(1, 0, 0, 60); Prof.Position = UDim2.new(0, 0, 1, -60); Prof.BackgroundTransparency = 1
 local Av = Instance.new("ImageLabel", Prof)
@@ -107,8 +92,7 @@ Av.Size = UDim2.new(0, 40, 0, 40); Av.Position = UDim2.new(0, 15, 0.5, -20)
 Av.Image = game:GetService("Players"):GetUserThumbnailAsync(p.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
 Instance.new("UICorner", Av).CornerRadius = UDim.new(1, 0)
 local Us = Instance.new("TextLabel", Prof)
-Us.Text = p.DisplayName; Us.Position = UDim2.new(0, 65, 0.5, -10)
-Us.TextColor3 = Color3.new(1,1,1); Us.Font = "GothamBold"; Us.TextSize = 14; Us.BackgroundTransparency = 1; Us.TextXAlignment = "Left"
+Us.Text = p.DisplayName; Us.Position = UDim2.new(0, 65, 0.5, -10); Us.TextColor3 = Color3.new(1,1,1); Us.Font = "GothamBold"; Us.TextSize = 14; Us.BackgroundTransparency = 1; Us.TextXAlignment = "Left"
 
 -- [[ OUTPUT CONSOLE ]] --
 local OutputFrame = Instance.new("ScrollingFrame", Main)
@@ -132,15 +116,12 @@ Pages.Size = UDim2.new(1, -240, 1, -160); Pages.Position = UDim2.new(0, 230, 0, 
 local function AddTab(name, subtext, iconId, isSettings)
     local Page = Instance.new("ScrollingFrame", Pages); Page.Size = UDim2.new(1, 0, 1, 0); Page.Visible = false; Page.BackgroundTransparency = 1; Page.ScrollBarThickness = 0
     Instance.new("UIListLayout", Page).Padding = UDim.new(0, 10)
-
     local Btn = Instance.new("TextButton"); Btn.Size = UDim2.new(0, 200, 0, 50); Btn.BackgroundColor3 = Color3.fromRGB(16, 16, 18); Btn.Text = ""; Instance.new("UICorner", Btn)
-    local Icon = Instance.new("ImageLabel", Btn); Icon.Size = UDim2.new(0, 20, 0, 20); Icon.Position = UDim2.new(0, 12, 0.5, -10); Icon.BackgroundTransparency = 1; Icon.Image = "rbxassetid://" .. tostring(iconId); Icon.ImageColor3 = Color3.fromRGB(255, 0, 50) 
+    local Icon = Instance.new("ImageLabel", Btn); Icon.Size = UDim2.new(0, 20, 0, 20); Icon.Position = UDim2.new(0, 12, 0.5, -10); Icon.BackgroundTransparency = 1; Icon.Image = "rbxassetid://" .. tostring(iconId or ""); Icon.ImageColor3 = Color3.fromRGB(255, 0, 50) 
     local L = Instance.new("TextLabel", Btn); L.Text = name; L.Size = UDim2.new(1, -55, 0, 25); L.Position = UDim2.new(0, 42, 0, 5); L.TextColor3 = Color3.new(1,1,1); L.Font = "GothamBold"; L.TextSize = 13; L.TextXAlignment = "Left"; L.BackgroundTransparency = 1
     local S = Instance.new("TextLabel", Btn); S.Text = subtext; S.Size = UDim2.new(1, -55, 0, 15); S.Position = UDim2.new(0, 42, 0, 23); S.TextColor3 = Color3.fromRGB(150, 150, 155); S.Font = "Gotham"; S.TextSize = 10; S.TextXAlignment = "Left"; S.BackgroundTransparency = 1
-    
     Btn.Parent = isSettings and Sidebar or TabScroller
     if isSettings then Btn.Position = UDim2.new(0.5, -100, 1, -115) end
-
     Btn.MouseButton1Click:Connect(function()
         if activeTabBtn then ts:Create(activeTabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(16, 16, 18)}):Play() end
         activeTabBtn = Btn; ts:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 38)}):Play()
@@ -152,22 +133,15 @@ end
 -- [[ MAGNET DROPDOWN ]] --
 local function CreateMagnetNested(parent)
     local Container = Instance.new("Frame", parent); Container.Size = UDim2.new(1, -20, 0, 60); Container.BackgroundColor3 = Color3.fromRGB(16, 16, 18); Container.ClipsDescendants = true; Instance.new("UICorner", Container)
-    Container.Name = "Ball Magnet"
     local Label = Instance.new("TextLabel", Container); Label.Text = "Ball Magnet"; Label.Size = UDim2.new(0.6, 0, 0, 60); Label.Position = UDim2.new(0, 20, 0, 0); Label.TextColor3 = Color3.new(1,1,1); Label.Font = "GothamBold"; Label.TextSize = 13; Label.TextXAlignment = "Left"; Label.BackgroundTransparency = 1
-    
     local Toggle = Instance.new("TextButton", Container); Toggle.Size = UDim2.new(0, 36, 0, 18); Toggle.Position = UDim2.new(1, -50, 0, 21); Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 48); Toggle.Text = ""; Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
     local Dot = Instance.new("Frame", Toggle); Dot.Size = UDim2.new(0, 14, 0, 14); Dot.Position = UDim2.new(0, 2, 0.5, -7); Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
-
     local Dropdown = Instance.new("Frame", Container); Dropdown.Size = UDim2.new(1, -40, 0, 100); Dropdown.Position = UDim2.new(0, 20, 0, 60); Dropdown.BackgroundTransparency = 1
-
     local SLabel = Instance.new("TextLabel", Dropdown); SLabel.Text = "Range: " .. _G.MagRange; SLabel.Size = UDim2.new(1,0,0,15); SLabel.TextColor3 = Color3.fromRGB(150, 150, 155); SLabel.Font = "Gotham"; SLabel.TextSize = 11; SLabel.BackgroundTransparency = 1; SLabel.TextXAlignment = "Left"
     local Bg = Instance.new("Frame", Dropdown); Bg.Size = UDim2.new(1, 0, 0, 6); Bg.Position = UDim2.new(0, 0, 0, 25); Bg.BackgroundColor3 = Color3.fromRGB(40, 40, 42); Instance.new("UICorner", Bg)
     local Fill = Instance.new("Frame", Bg); Fill.Size = UDim2.new(_G.MagRange/50, 0, 1, 0); Fill.BackgroundColor3 = Color3.fromRGB(255, 0, 50); Instance.new("UICorner", Fill)
-    
-    local VisLabel = Instance.new("TextLabel", Dropdown); VisLabel.Text = "Visual Hitbox"; VisLabel.Size = UDim2.new(0.6, 0, 0, 30); VisLabel.Position = UDim2.new(0, 0, 0, 45); VisLabel.TextColor3 = Color3.new(1,1,1); VisLabel.Font = "GothamBold"; VisLabel.TextSize = 12; VisLabel.TextXAlignment = "Left"; Label.BackgroundTransparency = 1
     local VisToggle = Instance.new("TextButton", Dropdown); VisToggle.Size = UDim2.new(0, 30, 0, 15); VisToggle.Position = UDim2.new(1, -30, 0, 52); VisToggle.BackgroundColor3 = Color3.fromRGB(45, 45, 48); VisToggle.Text = ""; Instance.new("UICorner", VisToggle).CornerRadius = UDim.new(1, 0)
     local VisDot = Instance.new("Frame", VisToggle); VisDot.Size = UDim2.new(0, 11, 0, 11); VisDot.Position = UDim2.new(0, 2, 0.5, -5.5); VisDot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", VisDot).CornerRadius = UDim.new(1, 0)
-
     Bg.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             canDrag = false
@@ -181,31 +155,25 @@ local function CreateMagnetNested(parent)
             uis.InputEnded:Connect(function(up) if up.UserInputType == Enum.UserInputType.MouseButton1 then move:Disconnect(); canDrag = true end end)
         end
     end)
-
     Toggle.MouseButton1Click:Connect(function()
         MagnetEnabled = not MagnetEnabled
         ts:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 0, MagnetEnabled and 150 or 60)}):Play()
         ts:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = MagnetEnabled and Color3.fromRGB(255, 0, 50) or Color3.fromRGB(45, 45, 48)}):Play()
         ts:Create(Dot, TweenInfo.new(0.2), {Position = MagnetEnabled and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
-        Log("Ball Magnet: " .. (MagnetEnabled and "Enabled" or "Disabled"))
     end)
-
     VisToggle.MouseButton1Click:Connect(function()
         VisualsEnabled = not VisualsEnabled
         ts:Create(VisToggle, TweenInfo.new(0.2), {BackgroundColor3 = VisualsEnabled and Color3.fromRGB(255, 0, 50) or Color3.fromRGB(45, 45, 48)}):Play()
         ts:Create(VisDot, TweenInfo.new(0.2), {Position = VisualsEnabled and UDim2.new(1, -14, 0.5, -5.5) or UDim2.new(0, 2, 0.5, -5.5)}):Play()
-        Log("Visual Hitbox: " .. (VisualsEnabled and "Visible" or "Hidden"))
     end)
 end
 
 -- [[ FEATURE BUILDER ]] --
 local function CreateFeature(parent, title, subText, hasSlider, defaultVal, maxVal, typeKey, callback)
     local Container = Instance.new("Frame", parent); Container.Size = UDim2.new(1, -20, 0, 60); Container.BackgroundColor3 = Color3.fromRGB(16, 16, 18); Container.ClipsDescendants = true; Instance.new("UICorner", Container)
-    Container.Name = title
     local Label = Instance.new("TextLabel", Container); Label.Text = title; Label.Size = UDim2.new(0.6, 0, 0, 60); Label.Position = UDim2.new(0, 20, 0, 0); Label.TextColor3 = Color3.new(1,1,1); Label.Font = "GothamBold"; Label.TextSize = 13; Label.TextXAlignment = "Left"; Label.BackgroundTransparency = 1
     local Toggle = Instance.new("TextButton", Container); Toggle.Size = UDim2.new(0, 36, 0, 18); Toggle.Position = UDim2.new(1, -50, 0, 21); Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 48); Toggle.Text = ""; Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
     local Dot = Instance.new("Frame", Toggle); Dot.Size = UDim2.new(0, 14, 0, 14); Dot.Position = UDim2.new(0, 2, 0.5, -7); Dot.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
-
     if hasSlider then
         local SliderFrame = Instance.new("Frame", Container); SliderFrame.Size = UDim2.new(1, -40, 0, 40); SliderFrame.Position = UDim2.new(0, 20, 0, 60); SliderFrame.BackgroundTransparency = 1
         local SLabel = Instance.new("TextLabel", SliderFrame); SLabel.Text = subText .. ": " .. defaultVal; SLabel.Size = UDim2.new(1,0,0,15); SLabel.TextColor3 = Color3.fromRGB(150, 150, 155); SLabel.Font = "Gotham"; SLabel.TextSize = 11; SLabel.BackgroundTransparency = 1; SLabel.TextXAlignment = "Left"
@@ -225,14 +193,15 @@ local function CreateFeature(parent, title, subText, hasSlider, defaultVal, maxV
             end
         end)
     end
-
     local active = false
     Toggle.MouseButton1Click:Connect(function()
         active = not active
         if typeKey == "Tuck" then AutoTuckEnabled = active
         elseif typeKey == "Block" then AdvancedBlocking = active 
         elseif typeKey == "InfJump" then _G.InfiniteJump = active
-        elseif typeKey == "Noclip" then NoclipEnabled = active end
+        elseif typeKey == "Noclip" then NoclipEnabled = active 
+        elseif typeKey == "Speed" then WalkspeedEnabled = active
+        elseif typeKey == "Power" then JumppowerEnabled = active end
         ts:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 0, (active and hasSlider) and 120 or 60)}):Play()
         ts:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = active and Color3.fromRGB(255, 0, 50) or Color3.fromRGB(45, 45, 48)}):Play()
         ts:Create(Dot, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
@@ -246,76 +215,78 @@ local PhysicsTab = AddTab("Physics", "Block, etc", 10723343321)
 local PlayerTab = AddTab("Player", "Movement, etc", 10723350321)
 local SettingsTab = AddTab("Settings", "Configuration", 10723344435, true)
 
--- [[ FEATURES ]] --
 CreateMagnetNested(CatchTab)
 CreateFeature(CatchTab, "Auto Tuck", "Speed (ms)", true, 100, 1000, "Tuck", function(v) _G.TuckSpeed = v end)
 CreateFeature(PhysicsTab, "Advanced Blocking", "", false, 0, 0, "Block", function() end)
-CreateFeature(PlayerTab, "Walkspeed", "Speed", true, 16, 250, "None", function(v) _G.WalkSpeed = v end)
-CreateFeature(PlayerTab, "JumpPower", "Power", true, 50, 500, "None", function(v) _G.JumpPower = v end)
+CreateFeature(PlayerTab, "Walkspeed", "Speed", true, 16, 250, "Speed", function(v) _G.WalkSpeed = v end)
+CreateFeature(PlayerTab, "JumpPower", "Power", true, 50, 500, "Power", function(v) _G.JumpPower = v end)
 CreateFeature(PlayerTab, "Infinite Jump", "Air Walk", false, 0, 0, "InfJump", function() end)
 CreateFeature(PlayerTab, "Noclip", "No Walls", false, 0, 0, "Noclip", function() end)
 
--- [[ VISUAL HITBOX CORE ]] --
-local SelectionBox = Instance.new("SelectionBox")
-SelectionBox.Color3 = Color3.fromRGB(255, 0, 50)
-SelectionBox.LineThickness = 0.05
-SelectionBox.Parent = game:GetService("CoreGui")
+-- [[ VISUALS ]] --
+local SelectionBox = Instance.new("SelectionBox", game:GetService("CoreGui"))
+SelectionBox.Color3 = Color3.fromRGB(255, 0, 50); SelectionBox.LineThickness = 0.05
+local VisualPart = Instance.new("Part", workspace)
+VisualPart.Transparency = 1; VisualPart.Anchored = true; VisualPart.CanCollide = false
 
-local VisualPart = Instance.new("Part")
-VisualPart.Transparency = 1
-VisualPart.Anchored = true
-VisualPart.CanCollide = false
-VisualPart.Parent = workspace
+-- [[ AUTO-TUCK ENGINE ]] --
+local function performTuck()
+    task.wait(_G.TuckSpeed / 1000)
+    vim:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+    task.wait(0.05)
+    vim:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+end
+
+p.Backpack.ChildAdded:Connect(function(child)
+    if AutoTuckEnabled and (child.Name == "Football" or child:IsA("Tool")) then performTuck() end
+end)
+
+p.CharacterAdded:Connect(function(char)
+    char.ChildAdded:Connect(function(child)
+        if AutoTuckEnabled and (child.Name == "Football" or child:IsA("Tool")) then performTuck() end
+    end)
+end)
+
+if p.Character then
+    p.Character.ChildAdded:Connect(function(child)
+        if AutoTuckEnabled and (child.Name == "Football" or child:IsA("Tool")) then performTuck() end
+    end)
+end
 
 -- [[ MAIN ENGINE ]] --
 rs.Heartbeat:Connect(function()
     local char = p.Character
+    local hand = char and (char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm"))
     local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = _G.WalkSpeed; hum.JumpPower = _G.JumpPower; hum.UseJumpPower = true end
     
+    -- SMART MOVEMENT ENGINE (Fixes the toggle not turning off)
+    if hum then
+        hum.WalkSpeed = WalkspeedEnabled and _G.WalkSpeed or 16
+        hum.JumpPower = JumppowerEnabled and _G.JumpPower or 50
+    end
+
     if NoclipEnabled and char then
         for _, v in pairs(char:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
     end
-
-    local ball = workspace:FindFirstChild("Football") or workspace:FindFirstChild("Ball")
     
-    -- UPDATED: Target Hand Logic (Ensures ball goes to RightHand/Right Arm)
-    local hand = char and (char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm"))
-
-    -- Visual Hitbox
     if MagnetEnabled and VisualsEnabled and char and char:FindFirstChild("HumanoidRootPart") then
-        VisualPart.CFrame = char.HumanoidRootPart.CFrame
-        VisualPart.Size = Vector3.new(_G.MagRange, _G.MagRange, _G.MagRange)
+        VisualPart.CFrame = char.HumanoidRootPart.CFrame; VisualPart.Size = Vector3.new(_G.MagRange, _G.MagRange, _G.MagRange)
         SelectionBox.Adornee = VisualPart
-    else
-        SelectionBox.Adornee = nil 
-    end
-
-    -- MAGNET LOGIC (Supports Mouse + Controller RT/R2)
-    local isCatching = uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or uis:IsGamepadButtonDown(Enum.UserInputType.Gamepad1, Enum.KeyCode.ButtonR2)
+    else SelectionBox.Adornee = nil end
     
-    if MagnetEnabled and isCatching then
-        -- Snap ball specifically to the Hand CFrame, not the body center
-        if ball and hand and (ball.Position - hand.Position).Magnitude <= _G.MagRange then
-            ball.Velocity = Vector3.new(0, 0, 0)
-            ball.RotVelocity = Vector3.new(0, 0, 0)
-            ball.CFrame = hand.CFrame 
-        end
-    end
-
-    -- Blocking Logic
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-        local character = player.Character
-        if character and character.Name ~= p.Name then
-            local jersey = character:FindFirstChild("Jersey") or character:FindFirstChild("Hitbox")
-            if jersey then
-                jersey.Size = AdvancedBlocking and Vector3.new(10, 10, 10) or Vector3.new(2, 2, 1)
-                jersey.CanCollide = false
+    local isCatching = uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or uis:IsGamepadButtonDown(Enum.UserInputType.Gamepad1, Enum.KeyCode.ButtonR2)
+    if MagnetEnabled and isCatching and hand then
+        for _, obj in pairs(workspace:GetChildren()) do
+            if (obj.Name == "Football" or obj.Name == "Ball") and obj:IsA("BasePart") then
+                if (obj.Position - hand.Position).Magnitude <= _G.MagRange then
+                    obj.Velocity = Vector3.zero; obj.RotVelocity = Vector3.zero
+                    obj.CFrame = hand.CFrame * CFrame.new(0, -0.85, 0)
+                end
             end
         end
     end
 end)
 
-uis.InputBegan:Connect(function(i, g) if not g and not binding and i.KeyCode == _G.HideKey then Main.Visible = not Main.Visible end end)
+uis.InputBegan:Connect(function(i, g) if not g and i.KeyCode == _G.HideKey then Main.Visible = not Main.Visible end end)
 CatchTab.Visible = true
 Log("Pharmacii Hub we more ud than ever https://discord.gg/6gmH42WEZR")
